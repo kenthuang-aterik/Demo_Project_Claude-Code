@@ -19,8 +19,10 @@ services:
       - ../Demo_Project_Rules:/work/rules:rw
       - ./:/work/agent:rw
       - ${HOME}/.claude:/home/agent/.claude:rw
-      # per-account Anthropic credential overlay (default = host); switch via CLAUDE_ACCOUNT
-      - ${HOME}/authorities/claude/${CLAUDE_ACCOUNT:-host}/.credentials.json:/home/agent/.claude/.credentials.json:ro
+      # per-account Anthropic auth (default = host); switch via CLAUDE_ACCOUNT.
+      # .credentials.json = OAuth token (rw so it can refresh); .claude.json = account + onboarding state.
+      - ${HOME}/authorities/claude/${CLAUDE_ACCOUNT:-host}/.credentials.json:/home/agent/.claude/.credentials.json:rw
+      - ${HOME}/authorities/claude/${CLAUDE_ACCOUNT:-host}/.claude.json:/home/agent/.claude.json:rw
       - ${HOME}/authorities/ssh/id_ed25519_aterik:/home/agent/.ssh/id_ed25519_aterik:ro
       - ${HOME}/projects/OCU-A1_Environment/OCU-A1_Environment_Data/config/ssh.config:/home/agent/.ssh/config:ro
       - ${HOME}/.ssh/known_hosts:/home/agent/.ssh/known_hosts:ro
