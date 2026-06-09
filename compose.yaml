@@ -1,0 +1,34 @@
+# Claude agent container — definition lives in THIS repo (Demo_Project_Claude-Code).
+# FULL tier: GitHub creds (SSH key + gh), Rules RW. Run via the orchestrator in
+# OCU-A1_Environment_Data/docker/compose.yaml, or standalone: `docker compose up -d`.
+services:
+  claude:
+    image: ocu-a1/agent:latest
+    pull_policy: never
+    container_name: ocu-claude-${CLAUDE_ACCOUNT:-host}
+    init: true
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    user: "1002:1002"            # = host kent; replaces podman --userns=keep-id
+    working_dir: /work
+    command: ["sleep infinity"]
+    networks: [ocu-net]
+    volumes:
+      - ../Demo_Project_Data:/work/data:rw
+      - ../Demo_Project_Rules:/work/rules:rw
+      - ./:/work/agent:rw
+      - ${HOME}/.claude:/home/agent/.claude:rw
+      # per-account Anthropic credential overlay (default = host); switch via CLAUDE_ACCOUNT
+      - ${HOME}/authorities/claude/${CLAUDE_ACCOUNT:-host}/.credentials.json:/home/agent/.claude/.credentials.json:ro
+      - ${HOME}/authorities/ssh/id_ed25519_aterik:/home/agent/.ssh/id_ed25519_aterik:ro
+      - ${HOME}/projects/OCU-A1_Environment/OCU-A1_Environment_Data/config/ssh.config:/home/agent/.ssh/config:ro
+      - ${HOME}/.ssh/known_hosts:/home/agent/.ssh/known_hosts:ro
+      - ${HOME}/.config/gh:/home/agent/.config/gh:ro
+      - ${HOME}/.gitconfig:/home/agent/.gitconfig:ro
+      - ${HOME}/projects/OCU-A1_Environment/OCU-A1_Environment_Data/config/tmux.conf:/home/agent/.tmux.conf:ro
+      - ${HOME}/projects/OCU-A1_Environment/OCU-A1_Environment_Data/docker/probe-limitations.sh:/usr/local/bin/probe:ro
+
+networks:
+  ocu-net:
+    external: true
